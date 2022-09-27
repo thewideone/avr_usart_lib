@@ -5,9 +5,65 @@
  *      Author: Szymon Kajda
  */
 
+#include <avr/io.h>
 #include "usart.h"
 
-#include <avr/io.h>
+#ifdef USART_FOR_AVR_1_SERIES
+
+#ifndef F_CPU
+#warning "You haven't defined F_CPU. I'm using F_CPU = 3333333"
+#define F_CPU 3333333
+#endif
+
+#define USART0_BAUD_RATE(BAUD_RATE) ((float)(F_CPU * 64 / (16 * (float)BAUD_RATE)) + 0.5)
+
+void USART_init( unsigned int baud_rate ){
+	PORTB.OUTSET = PIN2_bm;
+	PORTB.DIRSET = PIN2_bm;
+	PORTB.DIRCLR = PIN3_bm;
+	USART0.BAUD = (uint16_t)USART0_BAUD_RATE(baud_rate);
+	USART0.CTRLB = USART_RXEN_bm | USART_TXEN_bm;
+}
+
+unsigned char USART_rxChar( void ){
+	while(!(USART0.STATUS & USART_RXCIF_bm));
+	return USART0_RXDATAL;
+}
+
+void USART_txChar( unsigned char c ){
+	while(!(USART0.STATUS & USART_DREIF_bm));
+	USART0.TXDATAL = c;
+}
+
+#else
+
+#ifndef F_CPU
+#warning "You haven't defined F_CPU. I'm using F_CPU = 1000000"
+#define F_CPU 1000000
+#endif
+
+#define UBRRVAL(BAUD_RATE) F_CPU/16/BAUD_RATE-1
+
+void USART_init( unsigned int baud_rate ){
+	UBRR0H = (unsigned char)(UBRRVAL(baud_rate)>>8);
+	UBRR0L = (unsigned char)UBRRVAL(baud_rate);
+	UCSR0C |= (1<<UCSZ01)|(1<<UCSZ00);
+	UCSR0B |= (1<<RXEN0)|(1<<TXEN0)|(1<<RXCIE0);
+}
+
+unsigned char USART_rxChar( void ){
+	//while(bit_is_clear(UCSR0A,RXC0));
+	while(!(UCSR0A & (1<<RXC0)));
+	return UDR0;
+}
+
+void USART_txChar( unsigned char c ){
+	//while(bit_is_clear(UCSR0A,UDRE0));
+	while(!(UCSR0A & (1<<UDRE0)));
+	UDR0 = c;
+}
+
+#endif
 
 void USART_txString( char string[]){
 	int i=0;

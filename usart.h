@@ -12,11 +12,12 @@
 #define _USART_LIB_H_
 
 #include <avr/io.h>
-#include "usart_hardware_1-series/usart_hardware_1-series.h"
 
-extern void USART_init( unsigned int baud_rate );
-extern unsigned char USART_rxChar( void );
-extern void USART_txChar( unsigned char c );
+#define USART_FOR_AVR_1_SERIES
+
+void USART_init( unsigned int baud_rate );
+unsigned char USART_rxChar( void );
+void USART_txChar( unsigned char c );
 
 void USART_txString( char string[]);
 void USART_txUint8( uint8_t num );
