@@ -77,10 +77,17 @@ void USART_txUint8( uint8_t num ){
 	uint8_t rem, len = 3;	// 3 digits to print
 	char buf[len+1];
 
-	for( uint8_t i=0; i<8; i++ ){
+	if( num == 0 ){
+		for( uint8_t i=0; i < len; i++ )
+			buf[i] = '0';
+	}
+
+	uint8_t i=0;
+	while( num ){
 		rem = num % 10;
 		num = num / 10;
 		buf[len - (i + 1)] = rem + '0';
+		i++;
 	}
 
 	buf[len] = '\0';
@@ -92,10 +99,71 @@ void USART_txUint8Bin( uint8_t num ){
 	uint8_t rem, len = 8;	// 8 bits to print
 	char buf[len+1];
 
-	for( uint8_t i=0; i<8; i++ ){
+	if( num == 0 ){
+		for( uint8_t i=0; i < len; i++ )
+			buf[i] = '0';
+	}
+
+	uint8_t i=0;
+	while( num ){
 		rem = num % 2;
 		num = num / 2;
 		buf[len - (i + 1)] = rem + '0';
+		i++;
+	}
+
+	buf[len] = '\0';
+
+	USART_txString( buf );
+}
+
+void USART_txUint8Hex( uint8_t num ){
+	uint8_t rem, len = 3;	// 3 digits to print (+'h')
+	char buf[len+1];
+
+	if( num == 0 ){
+		for( uint8_t i=0; i < len-1; i++ )
+			buf[i] = '0';
+	}
+
+//	W I P
+//	uint8_t i=0;
+//	while( num ){
+//		rem = num % 2;
+//		num = num / 2;
+//		buf[len - (i + 1)] = rem + '0';
+//		i++;
+//	}
+
+
+
+	buf[len-1] = 'h';
+	buf[len] = '\0';
+
+	USART_txString( buf );
+}
+
+void USART_txInt16( int16_t num ){
+	uint8_t rem, len = 6;	// 6 digits to print (including '-')
+	char buf[len+1];
+
+//	if( num == 0 ){
+		for( uint8_t i=0; i < len; i++ )
+			buf[i] = '0';
+//	}
+	if( num < 0 ){
+		buf[0] = '-';
+		num = -num;
+	}
+	else
+		buf[0] = ' ';
+
+	uint8_t i=0;
+	while( num ){
+		rem = num % 10;
+		num = num / 10;
+		buf[len - (i + 1)] = rem + '0';
+		i++;
 	}
 
 	buf[len] = '\0';
